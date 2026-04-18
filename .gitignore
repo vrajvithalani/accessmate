@@ -1,0 +1,31 @@
+# deps
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Cloudflare / wrangler
+.wrangler/
+.dev.vars
+
+# env
+.env
+.env.local
+.env.*.local
+
+# build output
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+.idea/
+
+# misc
+*.tsbuildinfo
+next-env.d.ts
