@@ -19,6 +19,7 @@
   "dependencies": {
     "@base-ui/react": "^1.4.0",
     "@cloudflare/puppeteer": "^1.1.0",
+    "@google/generative-ai": "^0.24.1",
     "@opennextjs/cloudflare": "^1.19.1",
     "axe-core": "^4.11.3",
     "class-variance-authority": "^0.7.1",

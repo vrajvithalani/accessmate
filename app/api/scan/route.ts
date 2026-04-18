@@ -3,7 +3,8 @@ import { openPage } from '@/lib/scanner/browser';
 import { runAxeScan } from '@/lib/scanner/axe-runner';
 import { computeScore } from '@/lib/scanner/scorer';
 import { formatDate } from '@/lib/utils';
-import type { ScanResult } from '@/types/scan';
+import { explainViolationWithFallback } from '@/lib/ai/router';
+import type { ScanResult, Violation } from '@/types/scan';
 
 const AXE_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.11.3/axe.min.js';
 
@@ -53,7 +54,13 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
-    const violations = await runAxeScan(handle, axeScript);
+    const rawViolations = await runAxeScan(handle, axeScript);
+    const violations: Violation[] = await Promise.all(
+      rawViolations.map(async (v) => ({
+        ...v,
+        ai: await explainViolationWithFallback(v, env),
+      })),
+    );
     const score = computeScore(violations);
 
     const result: ScanResult = {

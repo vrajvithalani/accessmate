@@ -7,6 +7,12 @@ export interface ViolationNode {
   failureSummary?: string;
 }
 
+export interface ViolationAI {
+  explanation: string;
+  fix: string;
+  wcagRef: string;
+}
+
 export interface Violation {
   id: string;
   description: string;
@@ -14,6 +20,7 @@ export interface Violation {
   helpUrl: string;
   wcagLevel: WCAGLevel;
   nodes: ViolationNode[];
+  ai?: ViolationAI;
 }
 
 export interface ScanResult {
