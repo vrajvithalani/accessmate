@@ -1,0 +1,28 @@
+title = "accessmate gitleaks config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "gemini-api-key"
+description = "Google Gemini API key"
+regex = '''AIza[0-9A-Za-z\-_]{35}'''
+tags = ["key", "google", "gemini"]
+
+[[rules]]
+id = "groq-api-key"
+description = "Groq API key"
+regex = '''gsk_[0-9A-Za-z]{52}'''
+tags = ["key", "groq"]
+
+[[rules]]
+id = "cloudflare-api-token"
+description = "Cloudflare API token"
+regex = '''[0-9a-zA-Z_-]{40}'''
+tags = ["key", "cloudflare"]
+
+[allowlist]
+paths = [
+  "pnpm-lock.yaml",
+  ".git",
+]
