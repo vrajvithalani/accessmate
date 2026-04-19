@@ -1,5 +1,4 @@
 export const runtime = 'edge'
-import * as axe from 'axe-core'
 import { getCloudflareContext } from '@opennextjs/cloudflare'
 import { openPage } from '@/lib/scanner/browser'
 import { runAxeScan } from '@/lib/scanner/axe-runner'
@@ -43,9 +42,14 @@ export async function POST(request: Request): Promise<Response> {
   const { env } = getCloudflareContext()
   console.log('step4: got Cloudflare context')
 
-  // axe.source is a raw JS string bundled at build time — safe from esbuild mangling
-  const axeScript: string = axe.source
-  console.log('step5: loaded axe script, length =', axeScript.length)
+  // Fetch axe-core as plain text from CDN inside the Worker — no import, no esbuild CJS/ESM issues
+  const axeRes = await fetch('https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.9.1/axe.min.js')
+  if (!axeRes.ok) {
+    console.error('step5: failed to fetch axe-core, status =', axeRes.status)
+    return Response.json({ error: 'Failed to load axe-core' }, { status: 500 })
+  }
+  const axeScript = await axeRes.text()
+  console.log('step5: fetched axe script, length =', axeScript.length)
 
   const handle = await openPage(parsedUrl.href, env.BROWSER).catch((err: unknown) => {
     console.error('Failed to open page:', err)

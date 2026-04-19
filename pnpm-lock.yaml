@@ -17,9 +17,6 @@ importers:
       '@opennextjs/cloudflare':
         specifier: ^1.19.1
         version: 1.19.1(next@16.2.4(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(wrangler@4.83.0(@cloudflare/workers-types@4.20260418.1))
-      axe-core:
-        specifier: ^4.11.3
-        version: 4.11.3
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
