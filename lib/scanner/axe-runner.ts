@@ -38,17 +38,11 @@ function toSeverity(impact: string | null): Severity {
   return 'minor'
 }
 
-export async function runAxeScan(handle: PageHandle, axeScript?: string): Promise<Violation[]> {
+export async function runAxeScan(handle: PageHandle, axeScript: string): Promise<Violation[]> {
   const { page } = handle
 
-  if (typeof axeScript === 'string' && axeScript.length > 0) {
-    // Inline injection bypasses the target page's Content-Security-Policy
-    await page.addScriptTag({ content: axeScript })
-  } else {
-    await page.addScriptTag({
-      url: 'https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.9.1/axe.min.js',
-    })
-  }
+  // page.evaluate(string) runs raw JS via CDP Runtime.evaluate — bypasses CSP entirely
+  await page.evaluate(axeScript)
 
   const results: AxeResults = await page.evaluate(async () => {
     const w = window as unknown as { axe?: { run: (opts: unknown) => Promise<AxeResults> } }
