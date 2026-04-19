@@ -21,8 +21,8 @@ interface AxeResults {
 }
 
 function resolveWcagLevel(tags: string[]): WCAGLevel {
-  if (tags.some(t => t.includes('aaa'))) return 'AAA';
-  if (tags.some(t => t.includes('aa'))) return 'AA';
+  if (tags.some(tag => tag.includes('aaa'))) return 'AAA';
+  if (tags.some(tag => tag.includes('aa'))) return 'AA';
   return 'A';
 }
 
