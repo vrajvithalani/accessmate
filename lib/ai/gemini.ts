@@ -1,4 +1,3 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { Violation } from '@/types/scan'
 import { buildViolationPrompt } from './prompts'
 
@@ -8,25 +7,52 @@ export interface AIExplanation {
   wcagRef: string
 }
 
+interface GeminiPart {
+  text: string
+}
+
+interface GeminiContent {
+  parts: GeminiPart[]
+}
+
+interface GeminiCandidate {
+  content: GeminiContent
+}
+
+interface GeminiResponse {
+  candidates: GeminiCandidate[]
+}
+
 export async function explainViolation(
   violation: Violation,
   apiKey: string
 ): Promise<AIExplanation> {
-  const genAI = new GoogleGenerativeAI(apiKey)
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 10_000)
 
-  const timeoutPromise = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error('Gemini timeout')), 10_000)
-  )
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: buildViolationPrompt(violation) }] }],
+        }),
+        signal: controller.signal,
+      }
+    )
 
-  const result = await Promise.race([
-    model.generateContent({
-      contents: [{ role: 'user', parts: [{ text: buildViolationPrompt(violation) }] }],
-    }),
-    timeoutPromise,
-  ])
-  const responseText = result.response.text()
-  return parseAIResponse(responseText, violation.helpUrl)
+    if (!res.ok) {
+      throw new Error(`Gemini API error: ${res.status}`)
+    }
+
+    const data = (await res.json()) as GeminiResponse
+    const responseText = data.candidates[0]?.content?.parts[0]?.text ?? ''
+    return parseAIResponse(responseText, violation.helpUrl)
+  } finally {
+    clearTimeout(timeout)
+  }
 }
 
 function parseAIResponse(rawText: string, helpUrl: string): AIExplanation {
