@@ -8,5 +8,5 @@ binding = "KV"
 id = "REPLACE_WITH_KV_NAMESPACE_ID"
 preview_id = "REPLACE_WITH_KV_PREVIEW_NAMESPACE_ID"
 
-[[browser]]
+[browser]
 binding = "BROWSER"
