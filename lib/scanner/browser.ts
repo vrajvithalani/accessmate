@@ -1,4 +1,3 @@
-import * as puppeteer from '@cloudflare/puppeteer'
 import type { Browser, Page } from '@cloudflare/puppeteer'
 
 const PAGE_TIMEOUT = 30_000
@@ -9,6 +8,8 @@ export interface PageHandle {
 }
 
 export async function openPage(url: string, browser: Fetcher): Promise<PageHandle> {
+  // Dynamic import avoids esbuild CJS/ESM interop issues with @cloudflare/puppeteer
+  const { default: puppeteer } = await import('@cloudflare/puppeteer')
   const b = await puppeteer.launch(browser)
   const page = await b.newPage()
   page.setDefaultTimeout(PAGE_TIMEOUT)
