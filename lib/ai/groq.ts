@@ -39,16 +39,16 @@ export async function explainViolation(violation: Violation, apiKey: string): Pr
     }
 
     const data = (await res.json()) as GroqResponse;
-    const text = data.choices[0]?.message?.content ?? '';
-    return parseAIResponse(text, violation.helpUrl);
+    const responseText = data.choices[0]?.message?.content ?? '';
+    return parseAIResponse(responseText, violation.helpUrl);
   } finally {
     clearTimeout(timeout);
   }
 }
 
-function parseAIResponse(text: string, helpUrl: string): AIExplanation {
-  const sections = text.split(/\n(?=\d\.)/);
-  const explanation = sections[0]?.trim() ?? text.slice(0, 300);
+function parseAIResponse(rawText: string, helpUrl: string): AIExplanation {
+  const sections = rawText.split(/\n(?=\d\.)/);
+  const explanation = sections[0]?.trim() ?? rawText.slice(0, 300);
   const fix = sections[2]?.trim() ?? '';
   const wcagRef = sections[3]?.trim() ?? helpUrl;
   return { explanation, fix, wcagRef };

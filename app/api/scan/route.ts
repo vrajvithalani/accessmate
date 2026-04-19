@@ -33,7 +33,7 @@ export async function POST(request: Request): Promise<Response> {
 
   const { env } = getCloudflareContext();
 
-  const axeScript = axe.source;
+  const axeScript = typeof axe.source === 'string' ? axe.source : undefined;
 
   const handle = await openPage(parsedUrl.href, env.BROWSER).catch((err: unknown) => {
     console.error('Failed to open page:', err);
@@ -45,14 +45,23 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
-    const rawViolations = await runAxeScan(handle, axeScript);
-    const violations: Violation[] = await Promise.all(
-      rawViolations.map(async (v) => ({
-        ...v,
-        ai: await explainViolationWithFallback(v, env),
-      })),
+    const scanPromise = (async () => {
+      const rawViolations = await runAxeScan(handle, axeScript);
+      const violations: Violation[] = await Promise.all(
+        rawViolations.map(async (v) => ({
+          ...v,
+          ai: await explainViolationWithFallback(v, env),
+        })),
+      );
+      const score = computeScore(violations);
+      return { score, violations };
+    })();
+
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Scan timeout after 25 seconds')), 25000),
     );
-    const score = computeScore(violations);
+
+    const { score, violations } = await Promise.race([scanPromise, timeoutPromise]);
 
     const result: ScanResult = {
       score,
