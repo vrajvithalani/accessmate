@@ -46,8 +46,29 @@ export default function Home() {
     }
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "AccessMate",
+    applicationCategory: "DeveloperApplication",
+    description:
+      "AI-powered web accessibility auditor for WCAG 2.1/2.2 compliance checking",
+    url: "https://accessmate.vrajvithalani.com",
+    operatingSystem: "Web",
+    offers: {
+      "@type": "Offer",
+      price: 0,
+      priceCurrency: "USD",
+    },
+    keywords: "WCAG, accessibility, a11y, audit, scanner, compliance",
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Navbar />
 
       <main className="flex-1">
