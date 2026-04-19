@@ -1,67 +1,66 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { Navbar } from "@/components/shared/navbar";
-import { Hero } from "@/components/landing/hero";
-import { Features } from "@/components/landing/features";
-import { HowItWorks } from "@/components/landing/how-it-works";
-import { Footer } from "@/components/landing/footer";
-import { UrlInput } from "@/components/scanner/url-input";
-import { ScanProgress } from "@/components/scanner/scan-progress";
-import { ResultsView } from "@/components/scanner/results-view";
-import type { ScanResult } from "@/types/scan";
+import { useState } from 'react'
+import { Navbar } from '@/components/shared/navbar'
+import { Hero } from '@/components/landing/hero'
+import { Features } from '@/components/landing/features'
+import { HowItWorks } from '@/components/landing/how-it-works'
+import { Footer } from '@/components/landing/footer'
+import { UrlInput } from '@/components/scanner/url-input'
+import { ScanProgress } from '@/components/scanner/scan-progress'
+import { ResultsView } from '@/components/scanner/results-view'
+import type { ScanResult } from '@/types/scan'
 
 export default function Home() {
-  const [scanning, setScanning] = useState(false);
-  const [activeUrl, setActiveUrl] = useState("");
-  const [result, setResult] = useState<ScanResult | null>(null);
-  const [error, setError] = useState("");
+  const [scanning, setScanning] = useState(false)
+  const [activeUrl, setActiveUrl] = useState('')
+  const [result, setResult] = useState<ScanResult | null>(null)
+  const [error, setError] = useState('')
 
   async function handleScan(url: string) {
-    setScanning(true);
-    setActiveUrl(url);
-    setResult(null);
-    setError("");
+    setScanning(true)
+    setActiveUrl(url)
+    setResult(null)
+    setError('')
 
     try {
-      const res = await fetch("/api/scan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url }),
-      });
-      const data: unknown = await res.json();
+      })
+      const data: unknown = await res.json()
       if (!res.ok) {
         const msg =
-          typeof data === "object" && data !== null && "error" in data
+          typeof data === 'object' && data !== null && 'error' in data
             ? String((data as { error: unknown }).error)
-            : "Scan failed";
-        setError(msg);
+            : 'Scan failed'
+        setError(msg)
       } else {
-        setResult(data as ScanResult);
+        setResult(data as ScanResult)
       }
     } catch {
-      setError("Network error — please try again");
+      setError('Network error — please try again')
     } finally {
-      setScanning(false);
+      setScanning(false)
     }
   }
 
   const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    name: "AccessMate",
-    applicationCategory: "DeveloperApplication",
-    description:
-      "AI-powered web accessibility auditor for WCAG 2.1/2.2 compliance checking",
-    url: "https://accessmate.vrajvithalani.com",
-    operatingSystem: "Web",
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'AccessMate',
+    applicationCategory: 'DeveloperApplication',
+    description: 'AI-powered web accessibility auditor for WCAG 2.1/2.2 compliance checking',
+    url: 'https://accessmate.vrajvithalani.com',
+    operatingSystem: 'Web',
     offers: {
-      "@type": "Offer",
+      '@type': 'Offer',
       price: 0,
-      priceCurrency: "USD",
+      priceCurrency: 'USD',
     },
-    keywords: "WCAG, accessibility, a11y, audit, scanner, compliance",
-  };
+    keywords: 'WCAG, accessibility, a11y, audit, scanner, compliance',
+  }
 
   return (
     <>
@@ -124,5 +123,5 @@ export default function Home() {
 
       <Footer />
     </>
-  );
+  )
 }

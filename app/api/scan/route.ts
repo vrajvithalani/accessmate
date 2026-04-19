@@ -15,6 +15,7 @@ export async function POST(request: Request): Promise<Response> {
   } catch {
     return Response.json({ error: 'Invalid JSON' }, { status: 400 })
   }
+  console.log('step1: parsed request JSON', body)
 
   if (
     typeof body !== 'object' ||
@@ -26,6 +27,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const rawUrl = (body as { url: string }).url.trim()
+  console.log('step2: validated body, rawUrl =', rawUrl)
 
   let parsedUrl: URL
   try {
@@ -36,16 +38,20 @@ export async function POST(request: Request): Promise<Response> {
   } catch {
     return Response.json({ error: 'Invalid URL — must be a full http/https URL' }, { status: 400 })
   }
+  console.log('step3: parsed URL =', parsedUrl.href)
 
   const { env } = getCloudflareContext()
+  console.log('step4: got Cloudflare context')
 
   // axe.source is a raw JS string bundled at build time — safe from esbuild mangling
   const axeScript: string = axe.source
+  console.log('step5: loaded axe script, length =', axeScript.length)
 
   const handle = await openPage(parsedUrl.href, env.BROWSER).catch((err: unknown) => {
     console.error('Failed to open page:', err)
     return null
   })
+  console.log('step6: openPage result =', handle ? 'ok' : 'null')
 
   if (!handle) {
     return Response.json({ error: 'Failed to load target URL' }, { status: 500 })
@@ -54,13 +60,19 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const scanPromise = (async () => {
       const rawViolations = await runAxeScan(handle, axeScript)
+      console.log('step7: runAxeScan complete, violations count =', rawViolations.length)
+
       const violations: Violation[] = await Promise.all(
         rawViolations.map(async (v) => ({
           ...v,
           ai: await explainViolationWithFallback(v, env),
         }))
       )
+      console.log('step8: AI explanations attached to all violations')
+
       const score = computeScore(violations)
+      console.log('step9: score computed =', score)
+
       return { score, violations }
     })()
 
@@ -69,6 +81,7 @@ export async function POST(request: Request): Promise<Response> {
     )
 
     const { score, violations } = await Promise.race([scanPromise, timeoutPromise])
+    console.log('step10: scan race resolved, score =', score, 'violations =', violations.length)
 
     const result: ScanResult = {
       score,
@@ -76,6 +89,7 @@ export async function POST(request: Request): Promise<Response> {
       scannedUrl: parsedUrl.href,
       timestamp: formatDate(),
     }
+    console.log('step11: result object assembled, returning response')
 
     return Response.json(result)
   } catch (err) {
@@ -83,5 +97,6 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ error: 'Scan failed' }, { status: 500 })
   } finally {
     await handle.browser.close().catch(() => {})
+    console.log('step12: browser closed')
   }
 }
