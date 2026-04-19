@@ -14,6 +14,10 @@
       "esbuild",
       "workerd",
       "@esbuild/win32-x64"
+    ],
+    "ignoredBuiltDependencies": [
+      "sharp",
+      "unrs-resolver"
     ]
   },
   "dependencies": {
