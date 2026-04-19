@@ -15,18 +15,18 @@ export async function explainViolation(
   const genAI = new GoogleGenerativeAI(apiKey)
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), 30_000)
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error('Gemini timeout')), 10_000)
+  )
 
-  try {
-    const result = await model.generateContent({
+  const result = await Promise.race([
+    model.generateContent({
       contents: [{ role: 'user', parts: [{ text: buildViolationPrompt(violation) }] }],
-    })
-    const responseText = result.response.text()
-    return parseAIResponse(responseText, violation.helpUrl)
-  } finally {
-    clearTimeout(timeout)
-  }
+    }),
+    timeoutPromise,
+  ])
+  const responseText = result.response.text()
+  return parseAIResponse(responseText, violation.helpUrl)
 }
 
 function parseAIResponse(rawText: string, helpUrl: string): AIExplanation {

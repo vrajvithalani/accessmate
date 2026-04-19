@@ -1,4 +1,6 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare'
+
+export const runtime = 'edge'
 import axe from 'axe-core'
 import { openPage } from '@/lib/scanner/browser'
 import { runAxeScan } from '@/lib/scanner/axe-runner'

@@ -12,6 +12,6 @@ export async function openPage(url: string, browser: Fetcher): Promise<PageHandl
   const b = await puppeteer.launch(browser);
   const page = await b.newPage();
   page.setDefaultTimeout(PAGE_TIMEOUT);
-  await page.goto(url, { waitUntil: 'networkidle0', timeout: PAGE_TIMEOUT });
+  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: PAGE_TIMEOUT });
   return { browser: b, page };
 }
