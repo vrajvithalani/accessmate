@@ -1,12 +1,11 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare';
+import axe from 'axe-core';
 import { openPage } from '@/lib/scanner/browser';
 import { runAxeScan } from '@/lib/scanner/axe-runner';
 import { computeScore } from '@/lib/scanner/scorer';
 import { formatDate } from '@/lib/utils';
 import { explainViolationWithFallback } from '@/lib/ai/router';
 import type { ScanResult, Violation } from '@/types/scan';
-
-const AXE_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.11.3/axe.min.js';
 
 export async function POST(request: Request): Promise<Response> {
   let body: unknown;
@@ -34,15 +33,7 @@ export async function POST(request: Request): Promise<Response> {
 
   const { env } = getCloudflareContext();
 
-  let axeScript: string;
-  try {
-    const res = await fetch(AXE_CDN);
-    if (!res.ok) throw new Error(`CDN fetch failed: ${res.status}`);
-    axeScript = await res.text();
-  } catch (err) {
-    console.error('Failed to load axe-core script:', err);
-    return Response.json({ error: 'Scanner unavailable' }, { status: 500 });
-  }
+  const axeScript = axe.source;
 
   const handle = await openPage(parsedUrl.href, env.BROWSER).catch((err: unknown) => {
     console.error('Failed to open page:', err);
